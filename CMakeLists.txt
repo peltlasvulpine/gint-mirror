@@ -10,6 +10,15 @@ option(GINT_USER_VRAM "Put all VRAMs into the user stack (fx-CG 50 only)")
 option(GINT_STATIC_GRAY "Use static memory instead of malloc for gray buffers (fx-9860G only)")
 option(GINT_KMALLOC_DEBUG "Enable debug functions for kmalloc")
 
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "${FXSDK_COMPILER_INSTALL}" CACHE PATH "..." FORCE)
+  set(LIBDIR ".")
+  set(INCDIR "include")
+else()
+  set(LIBDIR "lib")
+  set(INCDIR "include")
+endif()
+
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
 # Generate <gint/config.h> with commit hash, version name and options
@@ -153,16 +162,16 @@ endif()
 set_target_properties("${NAME}" PROPERTIES OUTPUT_NAME "${NAME}")
 
 # Library file
-install(TARGETS "${NAME}" DESTINATION "${FXSDK_COMPILER_INSTALL}")
+install(TARGETS "${NAME}" DESTINATION ${LIBDIR})
 # Linker script
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${LINKER_SCRIPT}"
-  DESTINATION "${FXSDK_COMPILER_INSTALL}")
+  DESTINATION ${LIBDIR})
 # Headers
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include"
-  DESTINATION "${FXSDK_COMPILER_INSTALL}"
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+  DESTINATION ${INCDIR}
   FILES_MATCHING PATTERN "*.h")
 # Auto-generated config header
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/gint/config.h"
-  DESTINATION "${FXSDK_COMPILER_INSTALL}/include/gint")
+  DESTINATION ${INCDIR}/gint)
 # CMake module to find gint
 install(FILES cmake/FindGint.cmake DESTINATION "${FXSDK_CMAKE_MODULE_PATH}")
