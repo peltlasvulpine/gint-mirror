@@ -29,15 +29,53 @@
 //---
 
 /* SH7305 CPG */
-#define SH4_PLL_32x  0b011111
-#define SH4_PLL_26x  0b011001
-#define SH4_PLL_25x  0b011000
-#define SH4_PLL_16x  0b001111
+#define SH4_SELXM    1
+#define SH4_FRQCR(PLL,IFC,SFC,BFC,PFC) \
+    (((PLL)-1)<<24)+((IFC)<<20)+((SFC)<<12)+((BFC)<<8)+(PFC)
 #define SH4_DIV_2    0
 #define SH4_DIV_4    1
 #define SH4_DIV_8    2
 #define SH4_DIV_16   3
 #define SH4_DIV_32   4
+
+/* SH7305 BSC */
+#define SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
+    (((IWW)<<28)+((IWRWD)<<25)+((IWRWS)<<22)+((IWRRD)<<19)+((IWRRS)<<16))
+#define SH4_CS0BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
+    SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+0x0400
+#define SH4_CS2BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
+    SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+0x3400
+#define SH4_CS3BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
+    SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+0x4400
+#define SH4_CS5ABCR_T6K11(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
+    SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+0x0200
+#define SH4_CS5ABCR_R6152x(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
+    SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+0x0400
+#define SH4_BCR_4    3
+#define SH4_BCR_6    4
+#define SH4_BCR_8    5
+#define SH4_BCR_10   6
+#define SH4_BCR_12   7
+
+#define SH4_CSnWCR(WW,SW,WR,HW) \
+    (((WW)<<16)+((SW)<<11)+((WR)<<7)+(HW)+0x0040)
+#define SH4_CS3WCR(TRP,TRCD,A3CL,TRWL,TRC) \
+    (((TRP)<<13)+((TRCD)<<10)+((A3CL)<<7)+((TRWL)<<3)+(TRC)+0x0040)
+#define SH4_WW_EQWR  0
+#define SH4_WW(n)    ((n)+1)
+#define SH4_WR_8     7
+#define SH4_WR_10    8
+#define SH4_WR_12    9
+#define SH4_WR_14    10
+#define SH4_WR_18    11
+#define SH4_WR_24    12
+#define SH4_TRP_2    1
+#define SH4_TRCD_2   1
+#define SH4_A3CL_2   1
+#define SH4_TRC_3    0
+#define SH4_TRC_4    1
+#define SH4_TRC_6    2
+#define SH4_TRC_9    3
 
 /* SH7705-like CPG */
 #define SH3_PLL_1x   0
@@ -95,7 +133,7 @@ static void cpg_low_level_set_setting(struct cpg_overclock_setting const *s)
         SH7705_BSC.CS5AWCR.lword = s->CS5aWCR;
     }
     else {
-        SH7305_BSC.CS0WCR.WR = 11; /* 18 cycles */
+        SH7305_BSC.CS0WCR.WR = SH4_WR_18;
 
         SH7305_CPG.FLLFRQ.lword = s->FLLFRQ;
         SH7305_CPG.FRQCR.lword = s->FRQCR;
@@ -211,118 +249,118 @@ static struct cpg_overclock_setting const settings_fx9860g_sh3[5] = {
 
 static struct cpg_overclock_setting const settings_fx9860g_sh4[5] = {
     /* CLOCK_SPEED_F1 */
-    { .FLLFRQ  = 0x00004384,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
       .FRQCR   = 0x0F202203,
       .CS0BCR  = 0x24920400,
       .CS2BCR  = 0x24923400,
-      .CS3BCR  = 0x24924400,
+      .CS3BCR  = 0x24924400,  /* Don't care */
       .CS5aBCR = 0x224A0200,
       .CS0WCR  = 0x000005C0,
       .CS2WCR  = 0x00000140,
       .CS3WCR  = 0x000024D0,
       .CS5aWCR = 0x00000D41 },
     /* CLOCK_SPEED_F2 */
-    { .FLLFRQ  = 0x00004384,
-      .FRQCR   = (SH4_PLL_16x<<24)+(SH4_DIV_4<<20)+(SH4_DIV_8<<12)+(SH4_DIV_8<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x24920400,
-      .CS2BCR  = 0x24923400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(16,SH4_DIV_4,SH4_DIV_8,SH4_DIV_8,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(2,2,2,2,2),
+      .CS2BCR  = SH4_CS2BCR(2,2,2,2,2),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x224A0200,
-      .CS0WCR  = 0x000001C0,
-      .CS2WCR  = 0x00000140,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00000D41 },
+      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,3,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW_EQWR,1,SH4_WR_14,1) },
     /* CLOCK_SPEED_F3 */
-    { .FLLFRQ  = 0x00004384,
-      .FRQCR   = (SH4_PLL_16x<<24)+(SH4_DIV_8<<20)+(SH4_DIV_8<<12)+(SH4_DIV_8<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x04900400,
-      .CS2BCR  = 0x04903400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(16,SH4_DIV_8,SH4_DIV_8,SH4_DIV_8,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(0,2,2,2,0),
+      .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x24920200,
-      .CS0WCR  = 0x00000140,
-      .CS2WCR  = 0x00000140,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00000D41 },
+      .CS5aBCR = SH4_CS5ABCR_T6K11(2,2,2,2,2),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW_EQWR,1,SH4_WR_14,1) },
     /* CLOCK_SPEED_F4 */
-    { .FLLFRQ  = 0x00004384,
-      .FRQCR   = (SH4_PLL_32x<<24)+(SH4_DIV_4<<20)+(SH4_DIV_8<<12)+(SH4_DIV_8<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x04900400,
-      .CS2BCR  = 0x04903400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(32,SH4_DIV_4,SH4_DIV_8,SH4_DIV_8,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(0,2,2,2,0),
+      .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x224A0200,
-      .CS0WCR  = 0x000001C0,
-      .CS2WCR  = 0x00020140,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00000D41 },
+      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,3,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW(1),0,2,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW_EQWR,1,SH4_WR_14,1) },
     /* CLOCK_SPEED_F5 */
-    { .FLLFRQ  = 0x00004384,
-      .FRQCR   = (SH4_PLL_32x<<24)+(SH4_DIV_2<<20)+(SH4_DIV_4<<12)+(SH4_DIV_4<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x14900400,
-      .CS2BCR  = 0x04903400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(32,SH4_DIV_2,SH4_DIV_4,SH4_DIV_4,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(1,2,2,2,0),
+      .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x224A0200,
-      .CS0WCR  = 0x000003C0,
-      .CS2WCR  = 0x000302C0,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00000D41 },
+      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,SH4_WR_8,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW(2),0,5,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW_EQWR,1,SH4_WR_14,1) },
 };
 
 static struct cpg_overclock_setting const settings_g35pe2[5] = {
     /* CLOCK_SPEED_F1 */
-    { .FLLFRQ  = 0x00004384,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
       .FRQCR   = 0x0F112213,
       .CS0BCR  = 0x24920400,
       .CS2BCR  = 0x24923400,
-      .CS3BCR  = 0x24924400,
+      .CS3BCR  = 0x24924400,  /* Don't care */
       .CS5aBCR = 0x224A0200,
       .CS0WCR  = 0x000001C0,
       .CS2WCR  = 0x000001C0,
       .CS3WCR  = 0x000024D0,
       .CS5aWCR = 0x00031340 },
     /* CLOCK_SPEED_F2 */
-    { .FLLFRQ  = 0x00004384,
-      .FRQCR   = (SH4_PLL_16x<<24)+(SH4_DIV_4<<20)+(SH4_DIV_8<<12)+(SH4_DIV_8<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x24920400,
-      .CS2BCR  = 0x24923400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(16,SH4_DIV_4,SH4_DIV_8,SH4_DIV_8,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(2,2,2,2,2),
+      .CS2BCR  = SH4_CS2BCR(2,2,2,2,2),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x224A0200,
-      .CS0WCR  = 0x000001C0,
-      .CS2WCR  = 0x00000140,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00000D41 },
+      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,3,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW_EQWR,1,SH4_WR_14,1) },
     /* CLOCK_SPEED_F3 */
-    { .FLLFRQ  = 0x00004384,
-      .FRQCR   = (SH4_PLL_16x<<24)+(SH4_DIV_8<<20)+(SH4_DIV_8<<12)+(SH4_DIV_8<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x04900400,
-      .CS2BCR  = 0x04903400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(16,SH4_DIV_8,SH4_DIV_8,SH4_DIV_8,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(0,2,2,2,0),
+      .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x24920200,
-      .CS0WCR  = 0x00000140,
-      .CS2WCR  = 0x00000140,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00000D41 },
+      .CS5aBCR = SH4_CS5ABCR_T6K11(2,2,2,2,2),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW_EQWR,1,SH4_WR_14,1) },
     /* CLOCK_SPEED_F4 */
-    { .FLLFRQ  = 0x00004384,
-      .FRQCR   = (SH4_PLL_32x<<24)+(SH4_DIV_4<<20)+(SH4_DIV_8<<12)+(SH4_DIV_8<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x04900400,
-      .CS2BCR  = 0x04903400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(32,SH4_DIV_4,SH4_DIV_8,SH4_DIV_8,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(0,2,2,2,0),
+      .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x224A0200,
-      .CS0WCR  = 0x000001C0,
-      .CS2WCR  = 0x00020140,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00031B40 },
+      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,3,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW(1),0,2,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(2),3,6,0) },
     /* CLOCK_SPEED_F5 */
-    { .FLLFRQ  = 0x00004384,
-      .FRQCR   = (SH4_PLL_32x<<24)+(SH4_DIV_2<<20)+(SH4_DIV_4<<12)+(SH4_DIV_8<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x14900400,
-      .CS2BCR  = 0x04903400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(32,SH4_DIV_2,SH4_DIV_4,SH4_DIV_8,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(1,2,2,2,0),
+      .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x224A0200,
-      .CS0WCR  = 0x000001C0,
-      .CS2WCR  = 0x00020140,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00031B40 },
+      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,3,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW(1),0,2,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(2),3,6,0) },
 };
 
 #endif
@@ -331,180 +369,120 @@ static struct cpg_overclock_setting const settings_g35pe2[5] = {
 
 static struct cpg_overclock_setting const settings_prizm[5] = {
     /* CLOCK_SPEED_F1 */
-    { .FLLFRQ  = 0x00004000 + 900,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
       .FRQCR   = 0x0F102203,
       .CS0BCR  = 0x24920400,
       .CS2BCR  = 0x24923400,
-      .CS3BCR  = 0x24924400,
+      .CS3BCR  = 0x24924400,  /* Don't care */
       .CS5aBCR = 0x15140400,
       .CS0WCR  = 0x000001C0,
       .CS2WCR  = 0x00000140,
       .CS3WCR  = 0x000024D0,
       .CS5aWCR = 0x00010240 },
     /* CLOCK_SPEED_F2 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR   = (SH4_PLL_32x<<24)+(SH4_DIV_8<<20)+(SH4_DIV_16<<12)+(SH4_DIV_16<<8)+SH4_DIV_32,
-      .CS0BCR  = 0x04900400,
-      .CS2BCR  = 0x04903400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(32,SH4_DIV_8,SH4_DIV_16,SH4_DIV_16,SH4_DIV_32),
+      .CS0BCR  = SH4_CS0BCR(0,2,2,2,0),
+      .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x15140400,
-      .CS0WCR  = 0x00000140,
-      .CS2WCR  = 0x000100C0,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00010240 },
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,2,SH4_BCR_6,2,SH4_BCR_6),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW(0),0,1,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(0),0,4,0) },
     /* CLOCK_SPEED_F3 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR   = (SH4_PLL_32x<<24)+(SH4_DIV_4<<20)+(SH4_DIV_8<<12)+(SH4_DIV_8<<8)+SH4_DIV_32,
-      .CS0BCR  = 0x24900400,
-      .CS2BCR  = 0x04903400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(32,SH4_DIV_4,SH4_DIV_8,SH4_DIV_8,SH4_DIV_32),
+      .CS0BCR  = SH4_CS0BCR(2,2,2,2,0),
+      .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x15140400,
-      .CS0WCR  = 0x000002C0,
-      .CS2WCR  = 0x000201C0,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00010240 },
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,2,SH4_BCR_6,2,SH4_BCR_6),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,5,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW(1),0,3,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(0),0,4,0) },
     /* CLOCK_SPEED_F4 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR   = (SH4_PLL_32x<<24)+(SH4_DIV_4<<20)+(SH4_DIV_4<<12)+(SH4_DIV_4<<8)+SH4_DIV_32,
-      .CS0BCR  = 0x44900400,
-      .CS2BCR  = 0x04903400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(32,SH4_DIV_4,SH4_DIV_4,SH4_DIV_4,SH4_DIV_32),
+      .CS0BCR  = SH4_CS0BCR(SH4_BCR_6,2,2,2,0),
+      .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x15140400,
-      .CS0WCR  = 0x00000440,
-      .CS2WCR  = 0x00040340,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00010240 },
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,2,SH4_BCR_6,2,SH4_BCR_6),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,10,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW(3),0,6,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(0),0,4,0) },
     /* CLOCK_SPEED_F5 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR   = (SH4_PLL_26x<<24)+(SH4_DIV_2<<20)+(SH4_DIV_4<<12)+(SH4_DIV_4<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x34900400,
-      .CS2BCR  = 0x04903400,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(26,SH4_DIV_2,SH4_DIV_4,SH4_DIV_4,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(SH4_BCR_4,2,2,2,0),
+      .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x15140400,
-      .CS0WCR  = 0x000003C0,
-      .CS2WCR  = 0x000402C0,
-      .CS3WCR  = 0x000024D0,
-      .CS5aWCR = 0x00010240 },
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,2,SH4_BCR_6,2,SH4_BCR_6),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,8,0),
+      .CS2WCR  = SH4_CSnWCR(SH4_WW(3),0,5,0),
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(0),0,4,0) },
 };
 
-static struct cpg_overclock_setting const settings_fxcg50[5] = {
+static struct cpg_overclock_setting const settings_fxcg_50_100[5] = {
     /* CLOCK_SPEED_F1 */
-    { .FLLFRQ  = 0x00004000 + 900,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
       .FRQCR   = 0x0F011112,
       .CS0BCR  = 0x36DA0400,
-      .CS2BCR  = 0x36DA3400,
+      .CS2BCR  = 0x36DA3400,  /* Don't care */
       .CS3BCR  = 0x36DB4400,
       .CS5aBCR = 0x17DF0400,
       .CS0WCR  = 0x000003C0,
-      .CS2WCR  = 0x000003C0,
+      .CS2WCR  = 0x000003C0,  /* Don't care */
       .CS3WCR  = 0x000024D1,
       .CS5aWCR = 0x000203C1 },
     /* CLOCK_SPEED_F2 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR   = (SH4_PLL_16x<<24)+(SH4_DIV_4<<20)+(SH4_DIV_8<<12)+(SH4_DIV_8<<8)+SH4_DIV_8,
-      .CS0BCR  = 0x24920400,
-      .CS2BCR  = 0x24923400,
-      .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x17DF0400,
-      .CS0WCR  = 0x00000340,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(16,SH4_DIV_4,SH4_DIV_8,SH4_DIV_8,SH4_DIV_8),
+      .CS0BCR  = SH4_CS0BCR(2,2,2,2,2),
+      .CS2BCR  = 0x36DA3400,
+      .CS3BCR  = SH4_CS3BCR(2,2,2,2,2),
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,6,0),
       .CS2WCR  = 0x000003C0,
-      .CS3WCR  = 0x000024D1,
-      .CS5aWCR = 0x000203C1 },
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(1),0,SH4_WR_8,1) },
     /* CLOCK_SPEED_F3 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR  = (SH4_PLL_26x<<24)+(SH4_DIV_4<<20)+(SH4_DIV_8<<12)+(SH4_DIV_8<<8)+SH4_DIV_8,
-      .CS0BCR  = 0x24920400,
-      .CS2BCR  = 0x24923400,
-      .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x17DF0400,
-      .CS0WCR  = 0x00000240,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(26,SH4_DIV_4,SH4_DIV_8,SH4_DIV_8,SH4_DIV_8),
+      .CS0BCR  = SH4_CS0BCR(2,2,2,2,2),
+      .CS2BCR  = 0x36DA3400,
+      .CS3BCR  = SH4_CS3BCR(2,2,2,2,2),
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,4,0),
       .CS2WCR  = 0x000003C0,
-      .CS3WCR  = 0x000024D1,
-      .CS5aWCR = 0x000203C1 },
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(1),0,SH4_WR_8,1) },
     /* CLOCK_SPEED_F4 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR  = (SH4_PLL_32x<<24)+(SH4_DIV_2<<20)+(SH4_DIV_4<<12)+(SH4_DIV_8<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x24920400,
-      .CS2BCR  = 0x24923400,
-      .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x17DF0400,
-      .CS0WCR  = 0x000002C0,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(32,SH4_DIV_2,SH4_DIV_4,SH4_DIV_8,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(2,2,2,2,2),
+      .CS2BCR  = 0x36DA3400,
+      .CS3BCR  = SH4_CS3BCR(2,2,2,2,2),
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,5,0),
       .CS2WCR  = 0x000003C0,
-      .CS3WCR  = 0x000024D1,
-      .CS5aWCR = 0x000203C1 },
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(1),0,SH4_WR_8,1) },
     /* CLOCK_SPEED_F5 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR  = (SH4_PLL_25x<<24)+(SH4_DIV_2<<20)+(SH4_DIV_4<<12)+(SH4_DIV_4<<8)+SH4_DIV_8,
-      .CS0BCR  = 0x24920400,
-      .CS2BCR  = 0x24923400,
-      .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x17DF0400,
-      .CS0WCR  = 0x00000440,
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(25,SH4_DIV_2,SH4_DIV_4,SH4_DIV_4,SH4_DIV_8),
+      .CS0BCR  = SH4_CS0BCR(2,2,2,2,2),
+      .CS2BCR  = 0x36DA3400,
+      .CS3BCR  = SH4_CS3BCR(2,2,2,2,2),
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,SH4_WR_10,0),
       .CS2WCR  = 0x000003C0,
-      .CS3WCR  = 0x000024D1,
-      .CS5aWCR = 0x000203C1 },
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(1),0,SH4_WR_8,1) },
 };
 
-// TODO: These structures are big and many settings overlap. Make it smaller.
-// This is fxcg50[0,1,2,3,3].
-static struct cpg_overclock_setting const settings_fxcg100[5] = {
-    /* CLOCK_SPEED_F1 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR   = 0x0F011112,
-      .CS0BCR  = 0x36DA0400,
-      .CS2BCR  = 0x36DA3400,
-      .CS3BCR  = 0x36DB4400,
-      .CS5aBCR = 0x17DF0400,
-      .CS0WCR  = 0x000003C0,
-      .CS2WCR  = 0x000003C0,
-      .CS3WCR  = 0x000024D1,
-      .CS5aWCR = 0x000203C1 },
-    /* CLOCK_SPEED_F2 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR   = (SH4_PLL_16x<<24)+(SH4_DIV_4<<20)+(SH4_DIV_8<<12)+(SH4_DIV_8<<8)+SH4_DIV_8,
-      .CS0BCR  = 0x24920400,
-      .CS2BCR  = 0x24923400,
-      .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x17DF0400,
-      .CS0WCR  = 0x00000340,
-      .CS2WCR  = 0x000003C0,
-      .CS3WCR  = 0x000024D1,
-      .CS5aWCR = 0x000203C1 },
-    /* CLOCK_SPEED_F3 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR  = (SH4_PLL_26x<<24)+(SH4_DIV_4<<20)+(SH4_DIV_8<<12)+(SH4_DIV_8<<8)+SH4_DIV_8,
-      .CS0BCR  = 0x24920400,
-      .CS2BCR  = 0x24923400,
-      .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x17DF0400,
-      .CS0WCR  = 0x00000240,
-      .CS2WCR  = 0x000003C0,
-      .CS3WCR  = 0x000024D1,
-      .CS5aWCR = 0x000203C1 },
-    /* CLOCK_SPEED_F4 */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR  = (SH4_PLL_32x<<24)+(SH4_DIV_2<<20)+(SH4_DIV_4<<12)+(SH4_DIV_8<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x24920400,
-      .CS2BCR  = 0x24923400,
-      .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x17DF0400,
-      .CS0WCR  = 0x000002C0,
-      .CS2WCR  = 0x000003C0,
-      .CS3WCR  = 0x000024D1,
-      .CS5aWCR = 0x000203C1 },
-    /* CLOCK_SPEED_F5 is made identical to CLOCK_SPEED_F4 because clearly the
-       Graph Math+ cannot handle the higher bus speed. */
-    { .FLLFRQ  = 0x00004000 + 900,
-      .FRQCR  = (SH4_PLL_32x<<24)+(SH4_DIV_2<<20)+(SH4_DIV_4<<12)+(SH4_DIV_8<<8)+SH4_DIV_16,
-      .CS0BCR  = 0x24920400,
-      .CS2BCR  = 0x24923400,
-      .CS3BCR  = 0x24924400,
-      .CS5aBCR = 0x17DF0400,
-      .CS0WCR  = 0x000002C0,
-      .CS2WCR  = 0x000003C0,
-      .CS3WCR  = 0x000024D1,
-      .CS5aWCR = 0x000203C1 },
-};
 #endif
 
 static struct cpg_overclock_setting const *get_settings(void)
@@ -521,10 +499,8 @@ static struct cpg_overclock_setting const *get_settings(void)
 #if GINT_HW_CG
     if(gint[HWCALC] == HWCALC_PRIZM)
         return settings_prizm;
-    if(gint[HWCALC] == HWCALC_FXCG50)
-        return settings_fxcg50;
-    if(gint[HWCALC] == HWCALC_FXCG100)
-        return settings_fxcg100;
+    if(gint[HWCALC] == HWCALC_FXCG50 || gint[HWCALC] == HWCALC_FXCG100)
+        return settings_fxcg_50_100;
 #endif
 
     return NULL;
