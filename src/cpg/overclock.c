@@ -485,6 +485,68 @@ static struct cpg_overclock_setting const settings_fxcg_50_100[5] = {
 
 #endif
 
+#if GINT_HW_CP
+
+static struct cpg_overclock_setting const settings_fxcp400[5] = {
+    /* CLOCK_SPEED_F1 */
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = 0x0F011112,
+      .CS0BCR  = 0x36DA0400,
+      .CS2BCR  = 0x36DA0400,  /* Don't care */
+      .CS3BCR  = 0x76DB4400,
+      .CS5aBCR = 0x17DF0400,
+      .CS0WCR  = 0x000003C0,
+      .CS2WCR  = 0x000003C0,  /* Don't care */
+      .CS3WCR  = 0x000024D1,
+      .CS5aWCR = 0x00020141 },
+    /* CLOCK_SPEED_F2 */
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(32,SH4_DIV_4,SH4_DIV_8,SH4_DIV_8,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(2,2,2,2,0),
+      .CS2BCR  = 0x36DA3400,
+      .CS3BCR  = SH4_CS3BCR(SH4_BCR_8,2,2,2,0),
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,5,0),
+      .CS2WCR  = 0x000003C0,
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(1),0,2,1) },
+    /* CLOCK_SPEED_F3 */
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(32,SH4_DIV_4,SH4_DIV_8,SH4_DIV_8,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(2,2,2,2,0),
+      .CS2BCR  = 0x36DA3400,
+      .CS3BCR  = SH4_CS3BCR(SH4_BCR_8,2,2,2,0),
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,5,0),
+      .CS2WCR  = 0x000003C0,
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(0),0,2,0) },
+    /* CLOCK_SPEED_F4 */
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(32,SH4_DIV_2,SH4_DIV_4,SH4_DIV_8,SH4_DIV_16),
+      .CS0BCR  = SH4_CS0BCR(2,2,2,2,0),
+      .CS2BCR  = 0x36DA3400,
+      .CS3BCR  = SH4_CS3BCR(SH4_BCR_8,2,2,2,0),
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,5,0),
+      .CS2WCR  = 0x000003C0,
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(0),0,2,0) },
+    /* CLOCK_SPEED_F5 */
+    { .FLLFRQ  = (SH4_SELXM<<14)+900,
+      .FRQCR   = SH4_FRQCR(25,SH4_DIV_2,SH4_DIV_4,SH4_DIV_4,SH4_DIV_8),
+      .CS0BCR  = SH4_CS0BCR(SH4_BCR_4,2,2,2,0),
+      .CS2BCR  = 0x36DA3400,
+      .CS3BCR  = SH4_CS3BCR(SH4_BCR_8,2,2,2,0),
+      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,SH4_WR_10,0),
+      .CS2WCR  = 0x000003C0,
+      .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
+      .CS5aWCR = SH4_CSnWCR(SH4_WW(0),0,2,0) },
+};
+
+#endif
+
 static struct cpg_overclock_setting const *get_settings(void)
 {
 #if GINT_HW_FX
@@ -501,6 +563,11 @@ static struct cpg_overclock_setting const *get_settings(void)
         return settings_prizm;
     if(gint[HWCALC] == HWCALC_FXCG50 || gint[HWCALC] == HWCALC_FXCG100)
         return settings_fxcg_50_100;
+#endif
+
+#if GINT_HW_CP
+    if(gint[HWCALC] == HWCALC_FXCP400)
+        return settings_fxcp400;
 #endif
 
     return NULL;
