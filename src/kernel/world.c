@@ -5,6 +5,7 @@
 #include <gint/defs/call.h>
 #include <gint/hardware.h>
 #include <gint/display.h>
+#include <gint/clock.h>
 #include "kernel.h"
 
 #include <stdlib.h>
@@ -248,10 +249,24 @@ void gint_copy_vram(void)
 
 void gint_poweroff(GUNUSED bool show_logo)
 {
+#if !GINT_OS_FX
+	/* In fx-CG and fx-CP, the CS5ABCR and CS5AWCR will be initialized
+	   while waking up from a standby. In fx-CG 50/100, all CPG and BSC
+	   registers will be initialized while waking up from a deep sleep.
+	   Save the current CPG parameters before poweroff. */
+	struct cpg_overclock_setting saved_cpg;
+	cpg_get_overclock_setting(&saved_cpg);
+#endif
+
 // TODO: Power off on fx-CP
 #if !GINT_OS_CP
 	void __PowerOff(int show_logo);
 	gint_copy_vram();
 	gint_world_switch(GINT_CALL(__PowerOff, (int)show_logo));
+#endif
+
+#if !GINT_OS_FX
+	/* Restore the saved CPG parameters */
+	cpg_set_overclock_setting(&saved_cpg);
 #endif
 }
