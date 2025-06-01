@@ -256,6 +256,13 @@ void gint_poweroff(GUNUSED bool show_logo)
 	   Save the current CPG parameters before poweroff. */
 	struct cpg_overclock_setting saved_cpg;
 	cpg_get_overclock_setting(&saved_cpg);
+
+	/* fx-CG 50/100 require at least 4 cycles of ROM wait to wake up from
+	   a deep sleep, otherwise they will lead to a soft brick and you have
+	   to press the RESTART button to do so. Applying the default speed
+	   level is sufficient as it sets the ROM wait to 8 cycles. */
+	if(gint[HWCALC] == HWCALC_FXCG50 || gint[HWCALC] == HWCALC_FXCG100)
+		clock_set_speed(CLOCK_SPEED_DEFAULT);
 #endif
 
 // TODO: Power off on fx-CP
