@@ -93,16 +93,16 @@ enum {
 	     F5:  CPU @ 235 MHz,  BFC @  58 MHz    [Fastest option]
 	   On fx-CG 10/20:
 	     F1:  CPU @  58 MHz,  BFC @  29 MHz    [Default speed]
-	     F2:  CPU @  58 MHz,  BFC @  29 MHz    [Improved memory speed]
-	     F3:  CPU @ 118 MHz,  BFC @  58 MHz    [Faster than F2]
-	     F4:  CPU @ 118 MHz,  BFC @ 118 MHz    [Fastest bus option]
-	     F5:  CPU @ 191 MHz,  BFC @  94 MHz    [Fastest CPU option]
-	   On fx-CG 50:
-	     F1:  CPU @ 116 MHz,  BFC @  58 MHz    [Default speed]
-	     F2:  CPU @  58 MHz,  BFC @  29 MHz    [fx-CG 10/20 default]
-	     F3:  CPU @  94 MHz,  BFC @  47 MHz    [Clearly slow: F2 < F3 < F1]
-	     F4:  CPU @ 232 MHz,  BFC @  58 MHz    [Fastest CPU option]
-	     F5:  CPU @ 189 MHz,  BFC @  94 MHz    [Fastest bus option] */
+	     F2:  CPU @  58 MHz,  BFC @  29 MHz    [Reduced memory latency]
+	     F3:  CPU @ 118 MHz,  BFC @  58 MHz    [fx-CG 50 mode]
+	     F4:  CPU @ 236 MHz,  BFC @  58 MHz    [F3 + double CPU speed]
+	     F5:  CPU @ 236 MHz,  BFC @ 118 MHz    [Fastest option]
+	   On fx-CG 50/100:
+	     F1:  CPU @ 118 MHz,  BFC @  58 MHz    [Default speed]
+	     F2:  CPU @  58 MHz,  BFC @  29 MHz    [fx-CG 10/20 mode]
+	     F3:  CPU @ 118 MHz,  BFC @  58 MHz    [F1 + reduced LCD latency]
+	     F4:  CPU @ 236 MHz,  BFC @  58 MHz    [F3 + double CPU speed]
+	     F5:  CPU @ 236 MHz,  BFC @ 118 MHz    [Fastest option] */
 
 	CLOCK_SPEED_F1 = 1,
 	CLOCK_SPEED_F2 = 2,
