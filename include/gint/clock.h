@@ -90,25 +90,25 @@ enum {
 	     F2:  CPU @  58 MHz,  BFC @  29 MHz    [fx-CG 10/20 default]
 	     F3:  CPU @  29 MHz,  BFC @  29 MHz    [SH3 default]
 	     F4:  CPU @ 118 MHz,  BFC @  58 MHz
-	     F5:  CPU @ 235 MHz,  BFC @  58 MHz    [Fastest option]
+	     F5:  CPU @ 236 MHz,  BFC @  58 MHz    [Fastest option]
 	   On fx-CG 10/20:
 	     F1:  CPU @  58 MHz,  BFC @  29 MHz    [Default speed]
 	     F2:  CPU @  58 MHz,  BFC @  29 MHz    [Reduced memory latency]
 	     F3:  CPU @ 118 MHz,  BFC @  58 MHz    [fx-CG 50 mode]
-	     F4:  CPU @ 236 MHz,  BFC @  58 MHz    [F3 + double CPU speed]
+	     F4:  CPU @ 236 MHz,  BFC @  58 MHz    [Double CPU speed]
 	     F5:  CPU @ 236 MHz,  BFC @ 118 MHz    [Fastest option]
 	   On fx-CG 50/100:
 	     F1:  CPU @ 118 MHz,  BFC @  58 MHz    [Default speed]
 	     F2:  CPU @  58 MHz,  BFC @  29 MHz    [fx-CG 10/20 mode]
-	     F3:  CPU @ 118 MHz,  BFC @  58 MHz    [F1 + reduced LCD latency]
-	     F4:  CPU @ 236 MHz,  BFC @  58 MHz    [F3 + double CPU speed]
-	     F5:  CPU @ 236 MHz,  BFC @ 118 MHz    [Fastest option] 
+	     F3:  CPU @ 118 MHz,  BFC @  58 MHz    [Reduced LCD latency]
+	     F4:  CPU @ 236 MHz,  BFC @  58 MHz    [Double CPU speed]
+	     F5:  CPU @ 236 MHz,  BFC @ 118 MHz    [Fastest option]
 	   On fx-CP 400/CG 500:
 	     F1:  CPU @ 118 MHz,  BFC @  58 MHz    [Default speed]
 	     F2:  CPU @ 118 MHz,  BFC @  58 MHz    [Reduced memory latency]
-	     F3:  CPU @ 118 MHz,  BFC @  58 MHz    [F2 + reduced LCD latency]
-	     F4:  CPU @ 236 MHz,  BFC @  58 MHz    [Fastest CPU option]
-	     F5:  CPU @ 184 MHz,  BFC @  92 MHz    [Fastest bus option] */
+	     F3:  CPU @ 118 MHz,  BFC @  58 MHz    [Reduced memory & LCD latency]
+	     F4:  CPU @ 184 MHz,  BFC @  92 MHz    [Fastest option for OS]
+	     F5:  CPU @ 236 MHz,  BFC @ 118 MHz    [Fastest option for gint] */
 
 	CLOCK_SPEED_F1 = 1,
 	CLOCK_SPEED_F2 = 2,
@@ -163,9 +163,13 @@ void cpg_get_overclock_setting(struct cpg_overclock_setting *s);
 /* Applies the specified overclock setting. */
 void cpg_set_overclock_setting(struct cpg_overclock_setting const *s);
 
-/* Sets whether or node CPG parameters are retained when world switching, i.e.
+/* Sets whether or not CPG parameters are retained when world switching, i.e.
    mostly whether overclock setting will remain while in the OS world and when
-   leaving the add-in. */
+   leaving the add-in.
+   
+   WARNING: Do not enable this setting while using CLOCK_SPEED_F5 in fx-CP
+   as I2C will not be functional in the OS world due to high I/O clock.
+   Please apply CLOCK_SPEED_DEFAULT before doing so! */
 void cpg_set_overclock_permanent(bool permanent);
 
 //---
