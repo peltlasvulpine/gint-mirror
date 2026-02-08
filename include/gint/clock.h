@@ -32,20 +32,20 @@ typedef struct
 		int PLL;
 	};
 
-	int Bphi_div;
 	int Iphi_div;
-	int Pphi_div;
 	int Sphi_div;
+	int Bphi_div;
+	int Pphi_div;
 
 	union {
 		int CKIO_f;
 		int RTCCLK_f;
 	};
 
-	int Bphi_f;
 	int Iphi_f;
-	int Pphi_f;
 	int Sphi_f;
+	int Bphi_f;
+	int Pphi_f;
 
 } clock_frequency_t;
 
