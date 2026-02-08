@@ -119,6 +119,19 @@ typedef volatile lword_union(sh7305_bsc_CSnWCR_06A6B_t,
 	uint32_t HW	:2;
 );
 
+typedef volatile lword_union(sh7305_bsc_CSnWCR_3_t,
+	uint32_t	:17;
+	uint32_t TRP	:2;
+	uint32_t	:1;
+	uint32_t TRCD	:2;
+	uint32_t	:1;
+	uint32_t A3CL	:2;
+	uint32_t	:2;
+	uint32_t TRWL	:2;
+	uint32_t	:1;
+	uint32_t TRC	:2;
+);
+
 typedef volatile lword_union(sh7305_bsc_CSnWCR_45A5B_t,
 	uint32_t	:11;
 	uint32_t BAS	:1;
@@ -175,18 +188,7 @@ typedef volatile struct
 		uint32_t	:4;
 		uint32_t HW	:2;
 	);
-	lword_union(CS3WCR,
-		uint32_t	:17;
-		uint32_t TRP	:2;
-		uint32_t	:1;
-		uint32_t TRCD	:2;
-		uint32_t	:1;
-		uint32_t A3CL	:2;
-		uint32_t	:2;
-		uint32_t TRWL	:2;
-		uint32_t	:1;
-		uint32_t TRC	:2;
-	);
+	sh7305_bsc_CSnWCR_3_t 	   CS3WCR;
 	sh7305_bsc_CSnWCR_45A5B_t  CS4WCR;
 	sh7305_bsc_CSnWCR_45A5B_t  CS5AWCR;
 	sh7305_bsc_CSnWCR_45A5B_t  CS5BWCR;
