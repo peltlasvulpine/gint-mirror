@@ -13,6 +13,86 @@ extern "C" {
 /* This header used to expose the sleep() function; include <gint/cpu.h> to
    ensure this is still the case */
 #include <gint/cpu.h>
+#include <gint/config.h>
+
+//---
+// Low-level clock speed access
+//---
+
+#define SH7305_SDMR3_CL2 ((volatile uint16_t *)0xFEC15040)
+#define SH7305_SDMR3_CL3 ((volatile uint16_t *)0xFEC15060)
+
+//---
+// Predefined clock speeds
+//---
+
+/* SH7305 CPG */
+#define SH4_SELXM    1
+#define SH4_FRQCR(PLL,IFC,SFC,BFC,PFC) \
+    (((PLL)-1)<<24)+((IFC)<<20)+((SFC)<<12)+((BFC)<<8)+(PFC)
+enum SH4_DIV {
+    SH4_DIV_2,  SH4_DIV_4,  SH4_DIV_8,
+    SH4_DIV_16, SH4_DIV_32, SH4_DIV_64
+};
+
+/* SH7305 BSC */
+#define SH4_CSnBCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
+    (((IWW)<<28)+((IWRWD)<<25)+((IWRWS)<<22)+((IWRRD)<<19)+((IWRRS)<<16))
+#define SH4_CS0BCR_TYPE 0x0400
+#define SH4_CS2BCR_TYPE 0x3400
+#define SH4_CS3BCR_TYPE 0x4400
+#if GINT_HW_FX
+# define SH4_CS5ABCR_TYPE 0x0200
+#elif GINT_HW_CG || GINT_HW_CP
+# define SH4_CS5ABCR_TYPE 0x0400
+#endif
+#define SH4_CS0BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
+    SH4_CSnBCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+SH4_CS0BCR_TYPE
+#define SH4_CS2BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
+    SH4_CSnBCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+SH4_CS2BCR_TYPE
+#define SH4_CS3BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
+    SH4_CSnBCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+SH4_CS3BCR_TYPE
+#define SH4_CS5ABCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
+    SH4_CSnBCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+SH4_CS5ABCR_TYPE
+enum SH4_BCR {
+    SH4_BCR_0, SH4_BCR_1, SH4_BCR_2,  SH4_BCR_4,
+    SH4_BCR_6, SH4_BCR_8, SH4_BCR_10, SH4_BCR_12
+};
+
+#define SH4_CSnWCR(WW,SW,WR,HW) \
+    (((WW)<<16)+((SW)<<11)+((WR)<<7)+(HW)+0x0040)
+#define SH4_CS3WCR(TRP,TRCD,A3CL,TRWL,TRC) \
+    (((TRP)<<13)+((TRCD)<<10)+((A3CL)<<7)+((TRWL)<<3)+(TRC)+0x0040)
+enum SH4_WW {
+    SH4_WW_EQWR, SH4_WW_0, SH4_WW_1, SH4_WW_2,
+    SH4_WW_3,    SH4_WW_4, SH4_WW_5, SH4_WW_6
+};
+enum SH4_SW {
+    SH4_SW_0_5, SH4_SW_1_5, SH4_SW_2_5, SH4_SW_3_5
+};
+enum SH4_WR {
+    SH4_WR_0,  SH4_WR_1,  SH4_WR_2,  SH4_WR_3,  SH4_WR_4,
+    SH4_WR_5,  SH4_WR_6,  SH4_WR_8,  SH4_WR_10, SH4_WR_12,
+    SH4_WR_14, SH4_WR_18, SH4_WR_24
+};
+enum SH4_HW {
+    SH4_HW_0_5, SH4_HW_1_5, SH4_HW_2_5, SH4_HW_3_5
+};
+enum SH4_TRP {
+    SH4_TRP_1, SH4_TRP_2, SH4_TRP_3, SH4_TRP_4
+};
+enum SH4_TRCD {
+    SH4_TRCD_1, SH4_TRCD_2, SH4_TRCD_3, SH4_TRCD_4
+};
+enum SH4_A3CL {
+    SH4_A3CL_2 = 1, SH4_A3CL_3 = 2
+};
+enum SH4_TRWL {
+    SH4_TRWL_0, SH4_TRWL_1, SH4_TRWL_2, SH4_TRWL_3
+};
+enum SH4_TRC {
+    SH4_TRC_3, SH4_TRC_4, SH4_TRC_6, SH4_TRC_9
+};
 
 //---
 //	Clock signals

@@ -17,79 +17,6 @@
 #include <gint/mpu/bsc.h>
 #include <gint/mpu/wdt.h>
 
-//---
-// Low-level clock speed access
-//---
-
-#define SH7305_SDMR3_CL2 ((volatile uint16_t *)0xFEC15040)
-#define SH7305_SDMR3_CL3 ((volatile uint16_t *)0xFEC15060)
-
-//---
-// Predefined clock speeds
-//---
-
-/* SH7305 CPG */
-#define SH4_SELXM    1
-#define SH4_FRQCR(PLL,IFC,SFC,BFC,PFC) \
-    (((PLL)-1)<<24)+((IFC)<<20)+((SFC)<<12)+((BFC)<<8)+(PFC)
-enum SH4_DIV {
-    SH4_DIV_2,  SH4_DIV_4,  SH4_DIV_8,
-    SH4_DIV_16, SH4_DIV_32, SH4_DIV_64
-};
-
-/* SH7305 BSC */
-#define SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
-    (((IWW)<<28)+((IWRWD)<<25)+((IWRWS)<<22)+((IWRRD)<<19)+((IWRRS)<<16))
-#define SH4_CS0BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
-    SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+0x0400
-#define SH4_CS2BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
-    SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+0x3400
-#define SH4_CS3BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
-    SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+0x4400
-#define SH4_CS5ABCR_T6K11(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
-    SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+0x0200
-#define SH4_CS5ABCR_R6152x(IWW,IWRWD,IWRWS,IWRRD,IWRRS) \
-    SH4_BCR(IWW,IWRWD,IWRWS,IWRRD,IWRRS)+0x0400
-enum SH4_BCR {
-    SH4_BCR_0, SH4_BCR_1, SH4_BCR_2,  SH4_BCR_4,
-    SH4_BCR_6, SH4_BCR_8, SH4_BCR_10, SH4_BCR_12
-};
-
-#define SH4_CSnWCR(WW,SW,WR,HW) \
-    (((WW)<<16)+((SW)<<11)+((WR)<<7)+(HW)+0x0040)
-#define SH4_CS3WCR(TRP,TRCD,A3CL,TRWL,TRC) \
-    (((TRP)<<13)+((TRCD)<<10)+((A3CL)<<7)+((TRWL)<<3)+(TRC)+0x0040)
-enum SH4_WW {
-    SH4_WW_EQWR, SH4_WW_0, SH4_WW_1, SH4_WW_2,
-    SH4_WW_3,    SH4_WW_4, SH4_WW_5, SH4_WW_6
-};
-enum SH4_SW {
-    SH4_SW_0_5, SH4_SW_1_5, SH4_SW_2_5, SH4_SW_3_5
-};
-enum SH4_WR {
-    SH4_WR_0,  SH4_WR_1,  SH4_WR_2,  SH4_WR_3,  SH4_WR_4,
-    SH4_WR_5,  SH4_WR_6,  SH4_WR_8,  SH4_WR_10, SH4_WR_12,
-    SH4_WR_14, SH4_WR_18, SH4_WR_24
-};
-enum SH4_HW {
-    SH4_HW_0_5, SH4_HW_1_5, SH4_HW_2_5, SH4_HW_3_5
-};
-enum SH4_TRP {
-    SH4_TRP_1, SH4_TRP_2, SH4_TRP_3, SH4_TRP_4
-};
-enum SH4_TRCD {
-    SH4_TRCD_1, SH4_TRCD_2, SH4_TRCD_3, SH4_TRCD_4
-};
-enum SH4_A3CL {
-    SH4_A3CL_2 = 1, SH4_A3CL_3 = 2
-};
-enum SH4_TRWL {
-    SH4_TRWL_0, SH4_TRWL_1, SH4_TRWL_2, SH4_TRWL_3
-};
-enum SH4_TRC {
-    SH4_TRC_3, SH4_TRC_4, SH4_TRC_6, SH4_TRC_9
-};
-
 /* SH7705-like CPG */
 #define SH3_PLL_1x   0
 #define SH3_PLL_2x   1
@@ -278,7 +205,7 @@ static struct cpg_overclock_setting const settings_fx9860g_sh4[5] = {
       .CS0BCR  = SH4_CS0BCR(2,2,2,2,2),
       .CS2BCR  = SH4_CS2BCR(2,2,2,2,2),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS5aBCR = SH4_CS5ABCR(2,1,1,1,2),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,3,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -289,7 +216,7 @@ static struct cpg_overclock_setting const settings_fx9860g_sh4[5] = {
       .CS0BCR  = SH4_CS0BCR(0,2,2,2,0),
       .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_T6K11(2,2,2,2,2),
+      .CS5aBCR = SH4_CS5ABCR(2,2,2,2,2),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -300,7 +227,7 @@ static struct cpg_overclock_setting const settings_fx9860g_sh4[5] = {
       .CS0BCR  = SH4_CS0BCR(0,2,2,2,0),
       .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS5aBCR = SH4_CS5ABCR(2,1,1,1,2),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,3,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_1,0,2,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -311,7 +238,7 @@ static struct cpg_overclock_setting const settings_fx9860g_sh4[5] = {
       .CS0BCR  = SH4_CS0BCR(1,2,2,2,0),
       .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS5aBCR = SH4_CS5ABCR(2,1,1,1,2),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,SH4_WR_8,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_2,0,5,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -336,7 +263,7 @@ static struct cpg_overclock_setting const settings_g35pe2[5] = {
       .CS0BCR  = SH4_CS0BCR(2,2,2,2,2),
       .CS2BCR  = SH4_CS2BCR(2,2,2,2,2),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS5aBCR = SH4_CS5ABCR(2,1,1,1,2),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,3,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -347,7 +274,7 @@ static struct cpg_overclock_setting const settings_g35pe2[5] = {
       .CS0BCR  = SH4_CS0BCR(0,2,2,2,0),
       .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_T6K11(2,2,2,2,2),
+      .CS5aBCR = SH4_CS5ABCR(2,2,2,2,2),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -358,7 +285,7 @@ static struct cpg_overclock_setting const settings_g35pe2[5] = {
       .CS0BCR  = SH4_CS0BCR(0,2,2,2,0),
       .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS5aBCR = SH4_CS5ABCR(2,1,1,1,2),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,3,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_1,0,2,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -369,7 +296,7 @@ static struct cpg_overclock_setting const settings_g35pe2[5] = {
       .CS0BCR  = SH4_CS0BCR(1,2,2,2,0),
       .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_T6K11(2,1,1,1,2),
+      .CS5aBCR = SH4_CS5ABCR(2,1,1,1,2),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,3,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_1,0,2,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -398,7 +325,7 @@ static struct cpg_overclock_setting const settings_prizm[5] = {
       .CS0BCR  = SH4_CS0BCR(0,2,2,2,0),
       .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,2,SH4_BCR_6,2,SH4_BCR_6),
+      .CS5aBCR = SH4_CS5ABCR(1,2,SH4_BCR_6,2,SH4_BCR_6),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,2,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_0,0,1,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -409,7 +336,7 @@ static struct cpg_overclock_setting const settings_prizm[5] = {
       .CS0BCR  = SH4_CS0BCR(2,2,2,2,0),
       .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,2,SH4_BCR_6,2,SH4_BCR_6),
+      .CS5aBCR = SH4_CS5ABCR(1,2,SH4_BCR_6,2,SH4_BCR_6),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,5,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_1,0,3,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -420,7 +347,7 @@ static struct cpg_overclock_setting const settings_prizm[5] = {
       .CS0BCR  = SH4_CS0BCR(2,2,2,2,0),
       .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,2,SH4_BCR_6,2,SH4_BCR_6),
+      .CS5aBCR = SH4_CS5ABCR(1,2,SH4_BCR_6,2,SH4_BCR_6),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,5,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_1,0,3,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -431,7 +358,7 @@ static struct cpg_overclock_setting const settings_prizm[5] = {
       .CS0BCR  = SH4_CS0BCR(SH4_BCR_6,2,2,2,0),
       .CS2BCR  = SH4_CS2BCR(0,2,2,2,0),
       .CS3BCR  = 0x24924400,
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,2,SH4_BCR_6,2,SH4_BCR_6),
+      .CS5aBCR = SH4_CS5ABCR(1,2,SH4_BCR_6,2,SH4_BCR_6),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,SH4_WR_10,0),
       .CS2WCR  = SH4_CSnWCR(SH4_WW_3,0,6,0),
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -456,7 +383,7 @@ static struct cpg_overclock_setting const settings_fxcg_50_100[5] = {
       .CS0BCR  = SH4_CS0BCR(2,2,2,2,2),
       .CS2BCR  = 0x36DA3400,
       .CS3BCR  = SH4_CS3BCR(2,2,2,2,2),
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS5aBCR = SH4_CS5ABCR(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,4,0),
       .CS2WCR  = 0x000003C0,
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_3),
@@ -467,7 +394,7 @@ static struct cpg_overclock_setting const settings_fxcg_50_100[5] = {
       .CS0BCR  = SH4_CS0BCR(2,2,2,2,0),
       .CS2BCR  = 0x36DA3400,
       .CS3BCR  = SH4_CS3BCR(0,2,2,2,0),
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS5aBCR = SH4_CS5ABCR(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,5,0),
       .CS2WCR  = 0x000003C0,
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
@@ -478,7 +405,7 @@ static struct cpg_overclock_setting const settings_fxcg_50_100[5] = {
       .CS0BCR  = SH4_CS0BCR(2,2,2,2,0),
       .CS2BCR  = 0x36DA3400,
       .CS3BCR  = SH4_CS3BCR(0,2,2,2,0),
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS5aBCR = SH4_CS5ABCR(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,5,0),
       .CS2WCR  = 0x000003C0,
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
@@ -489,7 +416,7 @@ static struct cpg_overclock_setting const settings_fxcg_50_100[5] = {
       .CS0BCR  = SH4_CS0BCR(SH4_BCR_6,2,2,2,0),
       .CS2BCR  = 0x36DA3400,
       .CS3BCR  = SH4_CS3BCR(0,2,2,2,0),
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS5aBCR = SH4_CS5ABCR(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,SH4_WR_12,0),
       .CS2WCR  = 0x000003C0,
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_6),
@@ -518,7 +445,7 @@ static struct cpg_overclock_setting const settings_fxcp400[5] = {
       .CS0BCR  = SH4_CS0BCR(2,2,2,2,0),
       .CS2BCR  = 0x36DA3400,
       .CS3BCR  = SH4_CS3BCR(SH4_BCR_8,2,2,2,0),
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS5aBCR = SH4_CS5ABCR(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,5,0),
       .CS2WCR  = 0x000003C0,
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
@@ -529,7 +456,7 @@ static struct cpg_overclock_setting const settings_fxcp400[5] = {
       .CS0BCR  = SH4_CS0BCR(2,2,2,2,0),
       .CS2BCR  = 0x36DA3400,
       .CS3BCR  = SH4_CS3BCR(SH4_BCR_8,2,2,2,0),
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS5aBCR = SH4_CS5ABCR(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,5,0),
       .CS2WCR  = 0x000003C0,
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
@@ -540,7 +467,7 @@ static struct cpg_overclock_setting const settings_fxcp400[5] = {
       .CS0BCR  = SH4_CS0BCR(SH4_BCR_4,2,2,2,0),
       .CS2BCR  = 0x36DA3400,
       .CS3BCR  = SH4_CS3BCR(SH4_BCR_8,2,2,2,0),
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS5aBCR = SH4_CS5ABCR(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,SH4_WR_10,0),
       .CS2WCR  = 0x000003C0,
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_4),
@@ -551,7 +478,7 @@ static struct cpg_overclock_setting const settings_fxcp400[5] = {
       .CS0BCR  = SH4_CS0BCR(SH4_BCR_6,2,2,2,0),
       .CS2BCR  = 0x36DA3400,
       .CS3BCR  = SH4_CS3BCR(0,2,2,2,0),
-      .CS5aBCR = SH4_CS5ABCR_R6152x(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
+      .CS5aBCR = SH4_CS5ABCR(1,SH4_BCR_4,SH4_BCR_12,SH4_BCR_4,SH4_BCR_12),
       .CS0WCR  = SH4_CSnWCR(SH4_WW_EQWR,0,SH4_WR_12,0),
       .CS2WCR  = 0x000003C0,
       .CS3WCR  = SH4_CS3WCR(SH4_TRP_2,SH4_TRCD_2,SH4_A3CL_2,2,SH4_TRC_6),
