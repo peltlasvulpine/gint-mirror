@@ -122,6 +122,8 @@ typedef struct
 		int RTCCLK_f;
 	};
 
+	int FLL_f;
+	int PLL_f;
 	int Iphi_f;
 	int Sphi_f;
 	int Bphi_f;

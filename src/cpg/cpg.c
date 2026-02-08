@@ -94,7 +94,9 @@ static void sh7305_probe(void)
 	/* Deduce the input frequency of divider 1 */
 	int base = 32768;
 	if(CPG.PLLCR.FLLE) base *= fll;
+	freq.FLL_f = base;
 	if(CPG.PLLCR.PLLE) base *= pll;
+	freq.PLL_f = base;
 
 	/* And the frequency of all other input clocks */
 	freq.RTCCLK_f = 32768;
