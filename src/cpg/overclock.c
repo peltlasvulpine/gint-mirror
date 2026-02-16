@@ -75,7 +75,9 @@ static void cpg_low_level_set_setting(struct cpg_overclock_setting const *s)
     else {
         SH7305_BSC.CS0WCR.WR = SH4_WR_18;
 
-        SH7305_CPG.FLLFRQ.lword = s->FLLFRQ;
+        /* Force apply SELXM=1 first to avoid overwhelming speed
+           due to using SELXM=0 */
+        SH7305_CPG.FLLFRQ.lword = s->FLLFRQ | (SH4_SELXM << 14);
         SH7305_CPG.FRQCR.lword = s->FRQCR;
         SH7305_CPG.FRQCR.KICK = 1;
         while(SH7305_CPG.LSTATS != 0) {}
@@ -94,6 +96,9 @@ static void cpg_low_level_set_setting(struct cpg_overclock_setting const *s)
 
         SH7305_BSC.CS5ABCR.lword = s->CS5aBCR;
         SH7305_BSC.CS5AWCR.lword = s->CS5aWCR;
+
+        /* Set FLLFRQ with given value at last */
+        SH7305_CPG.FLLFRQ.lword = s->FLLFRQ;
     }
 }
 
