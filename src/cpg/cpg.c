@@ -73,9 +73,8 @@ static void sh7305_probe(void)
 	int pll = CPG.FRQCR.STC + 1;
 	freq.PLL = pll;
 
-	/* The FLL ratio is the value of the setting, halved if SELXM=1 */
+	/* The FLL ratio is the value of the setting, effectively halved if SELXM=1 */
 	int fll = CPG.FLLFRQ.FLF;
-	if(CPG.FLLFRQ.SELXM == 1) fll >>= 1;
 	freq.FLL = fll;
 
 	/* On SH7724, the divider ratio is given by 1 / (setting + 1), but on
@@ -93,7 +92,11 @@ static void sh7305_probe(void)
 
 	/* Deduce the input frequency of divider 1 */
 	int base = 32768;
-	if(CPG.PLLCR.FLLE) base *= fll;
+	if(CPG.PLLCR.FLLE)
+	{
+		base *= fll;
+		base >>= (CPG.FLLFRQ.SELXM == 1);
+	}
 	freq.FLL_f = base;
 	if(CPG.PLLCR.PLLE) base *= pll;
 	freq.PLL_f = base;
