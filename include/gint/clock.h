@@ -112,22 +112,32 @@ typedef struct
 		int PLL;
 	};
 
-	int Iphi_div;
-	int Sphi_div;
-	int Bphi_div;
-	int Pphi_div;
+	union {
+		struct {
+			int Iphi_div;
+			int Sphi_div;
+			int Bphi_div;
+			int Pphi_div;
+		};
+		int div[4];
+	};
 
 	union {
 		int CKIO_f;
 		int RTCCLK_f;
 	};
 
-	int FLL_f;
-	int PLL_f;
-	int Iphi_f;
-	int Sphi_f;
-	int Bphi_f;
-	int Pphi_f;
+	union {
+		struct {
+			int FLL_f;
+			int PLL_f;
+			int Iphi_f;
+			int Sphi_f;
+			int Bphi_f;
+			int Pphi_f;
+		};
+		int f[6];
+	};
 
 } clock_frequency_t;
 
