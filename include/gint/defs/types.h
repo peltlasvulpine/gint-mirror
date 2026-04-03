@@ -65,4 +65,13 @@ typedef int64_t i64;
 		struct { fields } GPACKED(4);	\
 	} GPACKED(4) name
 
+/* array_union() & array_union2() - union between an array and struct members */
+#define array_union2(type, array_name, struct_name, ...) \
+	union {					\
+		type array_name[sizeof(struct { __VA_ARGS__ })/sizeof(type)];	\
+		struct { __VA_ARGS__ } struct_name;	\
+	}
+#define array_union(type, array_name, ...) \
+	array_union2(type, array_name, , __VA_ARGS__)
+
 #endif /* GINT_DEFS_TYPES */
