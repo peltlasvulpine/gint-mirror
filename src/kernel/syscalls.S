@@ -233,8 +233,8 @@ _gint_get_CASIOWIN_API:
 	.long 0x12c7, 0,          0           /* ClearKeyBuffer */
 	.long 0x01e6, 0x8004579a, 0x8007569e  /* GetVRAMAddress */
 	.long 0x1e6e, 0,          0           /* SetQuitHandler */
-	.long 0x1839, 0,          0           /* PowerOff */
-	.long 0x1187, 0,          0           /* Reset */
+	.long 0x1839, 0,          0x802a2428  /* PowerOff */
+	.long 0x1187, 0,          0x8022fcec  /* Reset */
 
 #define casiowin_call(id) bra _CASIOWIN_call; mov id, r0
 
