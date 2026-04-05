@@ -315,7 +315,7 @@ static struct cpg_overclock_setting const settings_g35pe2[5] = {
 static struct cpg_overclock_setting const settings_prizm[5] = {
     /* CLOCK_SPEED_F1 */
     { .FLLFRQ  = (SH4_SELXM<<14)+900,
-      .FRQCR   = 0x0F102203,
+      .FRQCR   = 0x0F112213,
       .CS0BCR  = 0x24920400,
       .CS2BCR  = 0x24923400,
       .CS3BCR  = 0x24924400,  /* Don't care */
