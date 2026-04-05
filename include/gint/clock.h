@@ -112,32 +112,26 @@ typedef struct
 		int PLL;
 	};
 
-	union {
-		struct {
-			int Iphi_div;
-			int Sphi_div;
-			int Bphi_div;
-			int Pphi_div;
-		};
-		int div[4];
-	};
+	array_union(u32, divs,
+		u32 Iphi_div;
+		u32 Sphi_div;
+		u32 Bphi_div;
+		u32 Pphi_div;
+	);
 
 	union {
 		int CKIO_f;
 		int RTCCLK_f;
 	};
 
-	union {
-		struct {
-			int FLL_f;
-			int PLL_f;
-			int Iphi_f;
-			int Sphi_f;
-			int Bphi_f;
-			int Pphi_f;
-		};
-		int f[6];
-	};
+	array_union(u32, fs,
+		u32 FLL_f;
+		u32 PLL_f;
+		u32 Iphi_f;
+		u32 Sphi_f;
+		u32 Bphi_f;
+		u32 Pphi_f;
+    );
 
 } clock_frequency_t;
 
@@ -244,9 +238,11 @@ void clock_set_speed(int speed);
 
 struct cpg_overclock_setting
 {
-    uint32_t FLLFRQ, FRQCR;
-    uint32_t CS0BCR, CS2BCR, CS3BCR, CS5aBCR;
-    uint32_t CS0WCR, CS2WCR, CS3WCR, CS5aWCR;
+    array_union(uint32_t, regs,
+		uint32_t FLLFRQ, FRQCR;
+		uint32_t CS0BCR, CS2BCR, CS3BCR, CS5aBCR;
+		uint32_t CS0WCR, CS2WCR, CS3WCR, CS5aWCR;
+	);
 };
 
 /* Queries the clock setting from the hardware. */

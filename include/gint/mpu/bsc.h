@@ -105,6 +105,18 @@ typedef volatile lword_union(sh7305_bsc_CSnBCR_t,
 	uint32_t	:9;
 );
 
+/* Common members of CSnWCR (except CS3WCR) */
+typedef volatile lword_union(sh7305_bsc_CSnWCR_t,
+	uint32_t	:8;
+	uint32_t WW	:3;
+	uint32_t	:3;
+	uint32_t SW	:2;
+	uint32_t WR	:4;
+	uint32_t WM	:1;
+	uint32_t	:4;
+	uint32_t HW	:2;
+);
+
 typedef volatile lword_union(sh7305_bsc_CSnWCR_06A6B_t,
 	uint32_t	:11;
 	uint32_t BAS	:1;
@@ -112,6 +124,21 @@ typedef volatile lword_union(sh7305_bsc_CSnWCR_06A6B_t,
 	uint32_t WW	:3;
 	uint32_t ADRSFIX:1;
 	uint32_t	:2;
+	uint32_t SW	:2;
+	uint32_t WR	:4;
+	uint32_t WM	:1;
+	uint32_t	:4;
+	uint32_t HW	:2;
+);
+
+typedef volatile lword_union(sh7305_bsc_CSnWCR_2_t,
+	uint32_t	:8;
+	uint32_t BW	:2;
+	uint32_t PMD	:1;
+	uint32_t BAS	:1;
+	uint32_t	:1;
+	uint32_t WW	:3;
+	uint32_t	:3;
 	uint32_t SW	:2;
 	uint32_t WR	:4;
 	uint32_t WM	:1;
@@ -145,8 +172,7 @@ typedef volatile lword_union(sh7305_bsc_CSnWCR_45A5B_t,
 	uint32_t HW	:2;
 );
 
-typedef volatile struct
-{
+typedef volatile struct {
 	lword_union(CMNCR,
 		uint32_t	:6;
 		uint32_t CKOSTP	:1;
@@ -163,37 +189,29 @@ typedef volatile struct
 		uint32_t HIZMEM	:1;
 		uint32_t HIZCNT	:1;
 	);
+	array_union(u32, CSn,
+		array_union(sh7305_bsc_CSnBCR_t, CSnBCR,
+			sh7305_bsc_CSnBCR_t CS0BCR;
+			sh7305_bsc_CSnBCR_t CS2BCR;
+			sh7305_bsc_CSnBCR_t CS3BCR;
+			sh7305_bsc_CSnBCR_t CS4BCR;
+			sh7305_bsc_CSnBCR_t CS5ABCR;
+			sh7305_bsc_CSnBCR_t CS5BBCR;
+			sh7305_bsc_CSnBCR_t CS6ABCR;
+			sh7305_bsc_CSnBCR_t CS6BBCR;
+		);
 
-	sh7305_bsc_CSnBCR_t CS0BCR;
-	sh7305_bsc_CSnBCR_t CS2BCR;
-	sh7305_bsc_CSnBCR_t CS3BCR;
-	sh7305_bsc_CSnBCR_t CS4BCR;
-	sh7305_bsc_CSnBCR_t CS5ABCR;
-	sh7305_bsc_CSnBCR_t CS5BBCR;
-	sh7305_bsc_CSnBCR_t CS6ABCR;
-	sh7305_bsc_CSnBCR_t CS6BBCR;
-
-	sh7305_bsc_CSnWCR_06A6B_t  CS0WCR;
-	lword_union(CS2WCR,
-		uint32_t	:8;
-		uint32_t BW	:2;
-		uint32_t PMD	:1;
-		uint32_t BAS	:1;
-		uint32_t	:1;
-		uint32_t WW	:3;
-		uint32_t	:3;
-		uint32_t SW	:2;
-		uint32_t WR	:4;
-		uint32_t WM	:1;
-		uint32_t	:4;
-		uint32_t HW	:2;
+		array_union(sh7305_bsc_CSnWCR_t, CSnWCR,
+			sh7305_bsc_CSnWCR_06A6B_t  CS0WCR;
+			sh7305_bsc_CSnWCR_2_t      CS2WCR;
+			sh7305_bsc_CSnWCR_3_t 	   CS3WCR;
+			sh7305_bsc_CSnWCR_45A5B_t  CS4WCR;
+			sh7305_bsc_CSnWCR_45A5B_t  CS5AWCR;
+			sh7305_bsc_CSnWCR_45A5B_t  CS5BWCR;
+			sh7305_bsc_CSnWCR_06A6B_t  CS6AWCR;
+			sh7305_bsc_CSnWCR_06A6B_t  CS6BWCR;
+	    );
 	);
-	sh7305_bsc_CSnWCR_3_t 	   CS3WCR;
-	sh7305_bsc_CSnWCR_45A5B_t  CS4WCR;
-	sh7305_bsc_CSnWCR_45A5B_t  CS5AWCR;
-	sh7305_bsc_CSnWCR_45A5B_t  CS5BWCR;
-	sh7305_bsc_CSnWCR_06A6B_t  CS6AWCR;
-	sh7305_bsc_CSnWCR_06A6B_t  CS6BWCR;
 
 	lword_union(SDCR,
 		uint32_t	:11;

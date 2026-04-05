@@ -77,23 +77,9 @@ static void sh7305_probe(void)
 	int fll = CPG.FLLFRQ.FLF;
 	freq.FLL = fll;
 
-	/* On SH7724, the divider ratio is given by 1 / (setting + 1), but on
-	   the SH7305 it is 1 / (2^setting + 1). */
-
-	int divb = CPG.FRQCR.BFC;
-	int divi = CPG.FRQCR.IFC;
-	int divp = CPG.FRQCR.P1FC;
-	int divs = CPG.FRQCR.SFC;
-
-	freq.Bphi_div = 1 << (divb + 1);
-	freq.Iphi_div = 1 << (divi + 1);
-	freq.Pphi_div = 1 << (divp + 1);
-	freq.Sphi_div = 1 << (divs + 1);
-
 	/* Deduce the input frequency of divider 1 */
 	int base = 32768;
-	if(CPG.PLLCR.FLLE)
-	{
+	if(CPG.PLLCR.FLLE) {
 		base *= fll;
 		base >>= (CPG.FLLFRQ.SELXM == 1);
 	}
@@ -103,10 +89,14 @@ static void sh7305_probe(void)
 
 	/* And the frequency of all other input clocks */
 	freq.RTCCLK_f = 32768;
-	freq.Bphi_f   = base >> (divb + 1);
-	freq.Iphi_f   = base >> (divi + 1);
-	freq.Pphi_f   = base >> (divp + 1);
-	freq.Sphi_f   = base >> (divs + 1);
+
+	const u32 divs[4] = {CPG.FRQCR.IFC, CPG.FRQCR.SFC, CPG.FRQCR.BFC, CPG.FRQCR.P1FC};
+	for (int i = 0; i < 4; i++) {
+		/* On SH7724, the divider ratio is given by 1 / (setting + 1), but on
+		   the SH7305 it is 1 / (2^setting + 1). */
+		freq.divs[i] = 1 << (divs[i] + 1);
+		freq.fs[i + 2] = base >> (divs[i] + 1);
+	}
 }
 
 #undef CPG
