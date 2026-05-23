@@ -15,13 +15,8 @@
    May use the watchdog timer, but the keyboard driver will need to save it. */
 static void iokbd_delay(void)
 {
-	__asm__(
-		"nop\n\t"
-		"nop\n\t"
-		"nop\n\t"
-		"nop\n\t"
-	);
-
+	for (int i = 0; i < 10; i++)
+		__asm__("nop");
 #if 0
 	uint8_t  volatile *WTCSRr = (void *)0xffffff86;
 	uint16_t volatile *WTCSRw = (void *)0xffffff86;
